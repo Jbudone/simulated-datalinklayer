@@ -1,0 +1,191 @@
+<html>
+<head></head>
+<body>
+
+<h2>class <tt>Physical_layer_exception</tt></h2>
+
+<dl>
+<dt>Class purpose<dd>
+Provide an exception class for the <tt>Impair</tt>,
+<tt>Physical_layer_interface</tt>, and <tt>Physical_layer classes</tt>.
+<dt>Prototype<dd>
+<tt>class Physical_layer_exception: public exception { };</tt>
+</dl>
+<hr>
+
+<h2>class <tt>Impair</tt></h2>
+<dl>
+<dt>Class constants<dd>
+<tt>enum {MAXIMUM_LENGTH = 50};</tt>
+<dt>Class purpose<dd>
+Implements the packet drop, corrupt, and delay impairment for
+use by a <tt>Physical_layer_interface</tt>.
+<p>
+The <tt>drop</tt> and <tt>corrupt</tt>
+arrays specify the impairment behaviour for
+buffers passed to <tt>Physical_layer_interface::send()</tt>.
+Impairment is used <b>only</b> for buffers accepted by <tt>send</tt>,
+as indicated by a non-zero return value.
+<p>
+For accepted buffers, impairment is applied cyclically.
+<p>
+If <tt>drop_length</tt> is 0, then no drop impairment is performed.
+Otherwise, <tt>drop[<i>i</i>%drop_length]</tt>
+specifies the probability that the <tt><i>i</tt></i>'th
+packet accepted  by <tt>send</tt> will be dropped.
+<p>
+If <tt>corrupt_length</tt> is 0, then no corrupt impairment is performed.
+Otherwise, <tt>corrupt[<i>i</i>%corrupt_length]</tt>
+specifies the probability that the <tt><i>i</tt></i>'th
+packet accepted  by <tt>send</tt> will be corrupted.
+If a packet is selected for corruption,
+the least most significant bit in 
+a single randomly selected byte in that packet will be inverted.
+<p>
+The <tt>delay</tt> parameter specifies the Physical Layer
+delay in microseconds.
+Delay is applied to every packet accepted by <tt>send()</tt>:
+dropped, corrupted, or unimpaired.
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+Make internal copies of the <tt>drop</tt>, <tt>corrupt</tt>,
+and <tt>delay</tt> values.
+<dt>Exceptions<dd>
+throw <tt>Physical_layer_exception</tt> if
+<tt>drop_length</tt> > <tt>MAXIMUM_LENGTH</tt> or
+<tt>corrupt_length</tt> > <tt>MAXIMUM_LENGTH</tt>
+<p>
+throw <tt>Physical_layer_exception</tt>
+<br>
+if any value in <tt>drop[0..drop_length-1]</tt> or
+<tt>corrupt[0..drop_length-1]</tt> is not in [0.0..1.0]
+<dt>Preconditions<dd>
+all elements in <tt>drop[0..drop_length-1]</tt> are addressable
+<br>
+all elements in <tt>corrupt[0..corrupt_length-1]</tt> are addressable
+<dt>Prototype<dd>
+<tt>
+Impair(
+<br>
+ double drop[],unsigned int drop_length,
+<br>
+ double corrupt[],unsigned int corrupt_length,
+<br>
+ unsigned int delay);
+</tt>
+</dl>
+<hr>
+<h2>class <tt>Physical_layer_interface</tt></h2>
+<dl>
+<dt>Class constants<dd>
+<tt>enum {MAXIMUM_LENGTH = 100};</tt>
+<dt>Class purpose<dd>
+Provide a send/receive interface to a <tt>Physical_layer</tt> object.
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+Make internal copies of the <tt>Physical_layer</tt> address and the
+<tt>Impair</tt> object contents.
+<dt>Exceptions<dd>
+None.
+<dt>Preconditions<dd>
+*physical_layer_p is a <tt>Physical_layer</tt> object.
+<dt>Prototype<dd>
+<tt>Physical_layer_interface
+(Physical_layer *physical_layer_p,Impair &impair)</tt>
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+<pre><rm>if the interface is ready
+	make an internal copy of buffer[0...length-1]
+	send the buffer to the other interface, subject to impairment
+	return length
+else
+	return 0
+</rm></pre>
+<dt>Exceptions<dd>
+throw <tt>Physical_layer_exception</tt> if
+<tt>length</tt> == 0 or
+<tt>length</tt> > <tt>MAXIMUM_LENGTH</tt>
+<dt>Preconditions<dd>
+all elements in buffer[0..length-1] are addressable
+<dt>Prototype<dd>
+<tt>int send(unsigned char buffer[],unsigned int length);</tt>
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+<pre><rm>if the interface has a packet ready, of length <i>n</i>
+	copy it to buffer
+	return <i>n</i>
+else
+	return 0
+</rm></pre>
+<dt>Exceptions<dd>
+None
+<dt>Preconditions<dd>
+all elements in <tt>buffer[0..MAXIMUM_LENGTH-1]</tt> are addressable
+<dt>Prototype<dd>
+<tt>unsigned int receive(unsigned char buffer[]);</tt>
+</dl>
+
+<h2>class <tt>Physical_layer</tt></h2>
+<dl>
+<dt>Class constants<dd>
+None
+<dt>Class purpose<dd>
+Provide a Physical Layer emulator supporting interfaces a and b,
+bi-directional impairment, and send/receive logging for debuggging.
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+Make internal copies of <tt>a_impair</tt> and <tt>b_impair</tt>.
+<p>
+If <tt>send_log() != NULL</tt> then,
+for each packet accepted by <tt>send()</tt>,
+invoke <tt>send_log()</tt>.
+<p>
+If <tt>receive_log() != NULL</tt> then,
+for each call to receive, when the interface has a packet ready,
+invoke <tt>receive_log()</tt>.
+<dt>Exceptions<dd>
+None
+<dt>Preconditions<dd>
+None
+<dt>Prototype<dd>
+<tt>Physical_layer(Impair &a_impair,Impair &b_impair,
+ void (*send_log)(char,unsigned char[],unsigned int,bool,bool),
+  void (*receive_log)(char,unsigned char[],unsigned int));</tt>
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+return the address of the first interface passed to the constructor
+</rm></pre>
+<dt>Exceptions<dd>
+None
+<dt>Preconditions<dd>
+None
+<dt>Prototype<dd>
+<tt>Physical_layer_interface* get_a_interface();</tt>
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+return the address of the first interface passed to the constructor
+</rm></pre>
+<dt>Exceptions<dd>
+None
+<dt>Preconditions<dd>
+None
+<dt>Prototype<dd>
+<tt>Physical_layer_interface* get_b_interface();</tt>
+</dl>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<html>
+<head>
+</head>
+<body>
+<h2>Global types and constants</h2>
+<pre>
+struct Packet_header {
+	unsigned int checksum;
+	unsigned int seq;
+	unsigned int ack;
+	unsigned int data_length;
+};
+
+struct Packet {
+	struct Packet_header header;
+	unsigned char data[
+	 Physical_layer_interface::MAXIMUM_BUFFER_LENGTH-sizeof(Packet_header)];
+};
+
+struct Timed_packet {
+	timeval send_time;
+	struct Packet packet;
+};
+</pre>
+
+<h2>class <tt>Link_layer_exception</tt></h2>
+<dl>
+<dt>Class purpose<dd>
+Provide an exception class for the <tt>Link_layer class</tt>.
+<dt>Prototype<dd>
+<tt>class Link_layer_exception: public exception { };</tt>
+</dl>
+<hr>
+
+<h2>class <tt>Link_layer</tt></h2>
+<dl>
+<dt>Class constants<dd>
+<tt>enum {MAXIMUM_DATA_LENGTH =<br>
+ Physical_layer_interface::MAXIMUM_BUFFER_LENGTH-sizeof(Packet_header)};</tt>
+<dt>Class purpose<dd>
+Provide an error-free Link Layer protocol using the go-back-N
+sliding window protocol.
+</dl>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+Create a <tt>Link_layer</tt> instance.
+<dt>Preconditions<dd>
+<tt>physical_layer_interface</tt> is the address of a
+<tt>Physical_layer_interface</tt> instance
+<dt>Exceptions<dd>
+throw <tt>Link_layer_exception</tt> if
+<tt>max_send_window_size</tt> &gt;= <tt>num_sequence_numbers</tt>
+<p>
+throw <tt>Link_layer_exception</tt> if there is a POSIX threads error
+</dl>
+<pre>
+Link_layer(Physical_layer_interface* physical_layer_interface,
+ unsigned int num_sequence_numbers,
+ unsigned int max_send_window_size,unsigned int timeout);
+</pre>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+If there is space available, copy the data in <tt>buffer</tt> and
+return <tt>true</tt>. Otherwise, return <tt>false</tt>.
+<dt>Preconditions<dd>
+All elements in <tt>buffer[0..length-1]</tt> are addressable.
+<dt>Exceptions<dd>
+Throw <tt>Link_layer_exception</tt>
+if <tt>length</tt> not in
+[1..<tt>MAXIMUM_DATA_LENGTH</tt>]
+</dl>
+<tt>bool send(const void* buffer, unsigned int length);</tt>
+<hr>
+<dl>
+<dt>Normal Case<dd>
+If there is a packet available, copy it into <tt>buffer</tt>
+and return the length of the buffer copied.
+Otherwise, return 0.
+<dt>Preconditions<dd>
+All elements in <tt>buffer</tt>[0..<tt>MAXIMUM_DATA_LENGTH</tt>-1]
+are addressable.
+</dl>
+<tt>unsigned int receive(void* buffer);</tt>
+</body>
+</html>

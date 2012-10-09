@@ -1,0 +1,6 @@
+*.swp
+*.cpp~
+*.h~
+*.o
+tags
+link_layer_test
