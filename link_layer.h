@@ -57,9 +57,6 @@ private:
 	unsigned int last_receive_ack;
 bool received_ack_0;
 
-	// last ack packet sent to PL
-	unsigned int next_send_ack;
-
 	unsigned char receive_buffer[MAXIMUM_DATA_LENGTH];
 	unsigned int receive_buffer_length;
 

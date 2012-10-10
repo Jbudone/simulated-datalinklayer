@@ -26,7 +26,6 @@ Link_layer::Link_layer(Physical_layer_interface* physical_layer_interface,
 	this->physical_layer_interface = physical_layer_interface;
 
 	next_send_seq = 0;
-	next_send_ack = 0;
 	next_receive_seq = 0;
 	last_receive_ack = 0;
 	received_ack_0 = false;
