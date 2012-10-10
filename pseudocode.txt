@@ -1,0 +1,94 @@
+data:
+	send_queue: array of timed_packet
+		must be implemented as an array of timed_packet
+		packets must be stored in arrival order,
+		with the oldest packet at the left and
+		the most recent packet at the right
+
+link_layer(physical_layer_interface,
+num_sequence_numbers,max_send_window_size,timeout);
+	next_send_seq  = 0
+	next_send_ack = 0
+	next_receive_seq = 0
+	last_receive_ack = 0
+
+	initialize mutexes
+	start thread using loop()
+
+boolean send(buffer,length):
+	if data length is 0 or exceeds maximum
+		throw link_layer_exception
+	if send_queue not full
+		// add a new timed_packet P
+		set P.send_time to now
+		copy buffer to P.packet.data
+		set P.packet.header.data_length to length
+		set P.packet.header.seq to next_send_seq
+		add P to right end of send_queue
+
+		increment next_send_seq
+
+		return true
+	else 
+		return false
+
+unsigned integer receive(buffer):
+	if receive_buffer contains data of length N:
+		copy receive_buffer into buffer
+		empty receive_buffer
+		return N
+	else
+		return 0
+
+void loop():
+	while true
+		// process packets from physical layer
+		if packet available from physical layer
+			read packet P with length N from physical layer
+			if N >= HEADER_LENGTH
+			 && N <= HEADER_LENGTH + MAX_DATA_LENGTH
+			 && P.data_length <= MAX_DATA_LENGTH
+			 && P.checksum is correct
+				process_received_packet(p)
+
+		// process packets in send_queue
+		remove_acked_packets()
+		send_timed_out_packets()
+
+		// pause to allow other threads access
+		usleep(10)
+
+		// generate a pure ack, as needed
+		generate_ack_packet()
+
+void process_received_packet(p):
+	if p.seq == next_receive_seq
+		if p.data_length > 0
+			if receive_buffer empty
+				copy packet data to receive_buffer
+				increment next_receive_seq
+		else
+			increment next_receive_seq
+	last_receive_ack = p.ack
+
+void remove_acked_packets():
+	if send_queue contains a packet acknowldged by last_receive_ack
+		remove that packet and all packets to its left
+
+void send_timed_out_packets():
+	for packet P in send_queue
+		if P.send_time < now
+			P.ack = next_receive_seq
+			P.checksum = checksum(P)
+			if physical layer->send(P)
+				P.send_time = now + timeout
+
+void generate_ack_packet():
+	if send_queue is empty
+		add a new timed_packet P to send_queue
+		P.send_time = now
+		P.seq = next_send_seq
+		P.ack = don't care
+		P.data_length = 0
+
+		increment next_send_seq

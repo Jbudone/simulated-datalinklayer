@@ -39,7 +39,9 @@ public:
 	unsigned int receive(unsigned char buffer[]);
 
 	// seq of next packet expected from PL
-	unsigned int next_receive_seq;
+	unsigned int next_receive_seq; // TODO: place back under private
+bool isSender; // TODO: Delete me
+unsigned char getSenderSymbol(); // TODO: delete me
 private:
 	Physical_layer_interface* physical_layer_interface;
 	unsigned int num_sequence_numbers;
@@ -53,6 +55,10 @@ private:
 
 	// last ack received from PL
 	unsigned int last_receive_ack;
+bool received_ack_0;
+
+	// last ack packet sent to PL
+	unsigned int next_send_ack;
 
 	unsigned char receive_buffer[MAXIMUM_DATA_LENGTH];
 	unsigned int receive_buffer_length;

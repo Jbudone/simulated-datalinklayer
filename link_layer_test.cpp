@@ -23,6 +23,8 @@ void send_n(Link_layer *send_link_layer,Link_layer *receive_link_layer,int n)
 	int send_count = 0;
 	int receive_count = 0;
 
+send_link_layer->isSender=true;
+receive_link_layer->isSender=false;
 	send_buffer[0] = 0;
 	while (send_count < n || receive_count < n) {
 		int n0 = send_link_layer->send(send_buffer,1);
