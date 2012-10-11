@@ -23,6 +23,8 @@ void send_n(Link_layer *send_link_layer,Link_layer *receive_link_layer,int n)
 	int send_count = 0;
 	int receive_count = 0;
 
+send_link_layer->isSender=true;
+receive_link_layer->isSender=false;
 	send_buffer[0] = 0;
 	while (send_count < n || receive_count < n) {
 		int n0 = send_link_layer->send(send_buffer,1);
@@ -141,7 +143,21 @@ int main(int argc,char* argv[])
 
 	cout << "----- a to b..." << endl;
 	send_n(a_link_layer,b_link_layer,atoi(argv[1]));
+/*
+a_link_layer->last_receive_ack=0;
+a_link_layer->received_ack_0=false;
+a_link_layer->next_receive_seq=0;
+a_link_layer->next_send_seq=0;
+a_link_layer->receive_buffer_length=0;
+a_link_layer->send_queue_length=0;
 
+b_link_layer->last_receive_ack=0;
+b_link_layer->received_ack_0=false;
+b_link_layer->next_receive_seq=0;
+b_link_layer->next_send_seq=0;
+b_link_layer->receive_buffer_length=0;
+b_link_layer->send_queue_length=0;
+*/
 	cout << "----- b to a..." << endl;
 	send_n(b_link_layer,a_link_layer,atoi(argv[2]));
 

@@ -39,7 +39,18 @@ public:
 	unsigned int receive(unsigned char buffer[]);
 
 	// seq of next packet expected from PL
-	unsigned int next_receive_seq;
+	unsigned int next_receive_seq; // TODO: place back under private
+bool isSender; // TODO: Delete me
+// seq for next packet added to send_queue
+unsigned int next_send_seq;
+
+// last ack received from PL
+unsigned int last_receive_ack;
+bool received_ack_0;
+unsigned int receive_buffer_length;
+unsigned char getSenderSymbol(); // TODO: delete me
+unsigned int send_queue_length;
+unsigned int num_sequence_rollover;
 private:
 	Physical_layer_interface* physical_layer_interface;
 	unsigned int num_sequence_numbers;
@@ -48,18 +59,11 @@ private:
 
 	pthread_t thread;
 
-	// seq for next packet added to send_queue
-	unsigned int next_send_seq;
-
-	// last ack received from PL
-	unsigned int last_receive_ack;
 
 	unsigned char receive_buffer[MAXIMUM_DATA_LENGTH];
-	unsigned int receive_buffer_length;
 
 	// send queue related tasks
 	Timed_packet *send_queue;	
-	unsigned int send_queue_length;
 	void send_queue_add_packet(struct Timed_packet p);
 	void append_num_to_buffer(unsigned char buffer[], unsigned int start_position, unsigned int num);
 	unsigned int read_num_from_buffer(unsigned char buffer[], unsigned int start_position);

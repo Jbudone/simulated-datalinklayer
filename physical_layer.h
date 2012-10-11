@@ -56,12 +56,12 @@ private:
 	void (*receive_log)(char,unsigned char[],unsigned int);
 
 	int receive(unsigned char[],Physical_layer_interface*);
+	unsigned int buffer_length; // ignore other fields if buffer_length is 0
 
 	Physical_layer *physical_layer_p;
 	Impair impair;
 
 	// buffer state
-	unsigned int buffer_length; // ignore other fields if buffer_length is 0
 	unsigned char buffer[MAXIMUM_BUFFER_LENGTH];
 	struct timeval buffer_release_time;
 	bool buffer_is_corrupted,buffer_will_be_dropped;
