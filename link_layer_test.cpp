@@ -111,18 +111,18 @@ int main(int argc,char* argv[])
 	cout << "----- a to b..." << endl;
 	send_n(a_link_layer,b_link_layer,atoi(argv[1]));
 
-//a_link_layer->last_receive_ack=0;
-//a_link_layer->received_ack_0=false;
-//a_link_layer->next_receive_seq=0;
-//a_link_layer->next_send_seq=0;
+a_link_layer->last_receive_ack=0;
+a_link_layer->received_ack_0=false;
+a_link_layer->next_receive_seq=0;
+a_link_layer->next_send_seq=0;
 a_link_layer->receive_buffer_length=0;
 a_link_layer->send_queue_length=0;
 physical_layer.get_a_interface()->buffer_length=0;
 
-//b_link_layer->last_receive_ack=0;
-//b_link_layer->received_ack_0=false;
-//b_link_layer->next_receive_seq=0;
-//b_link_layer->next_send_seq=0;
+b_link_layer->last_receive_ack=0;
+b_link_layer->received_ack_0=false;
+b_link_layer->next_receive_seq=0;
+b_link_layer->next_send_seq=0;
 b_link_layer->receive_buffer_length=0;
 b_link_layer->send_queue_length=0;
 physical_layer.get_b_interface()->buffer_length=0;
