@@ -1,15 +1,6 @@
 #include "link_layer.h"
 #include "timeval_operators.h"
 
-// TODO LIST
-// * send() NOT set as boolean, but we're not allowed to change prototype ??
-// * set p.send_time as now+timeout when pseudocode requests send_time = now
-// * what are these for? [receive(), generate_ack_packet(), num_sequence_numbers, next_send_ack]
-// * Go-back-N protocol implemented?
-// * WHY does receive() clear the receive_buffer BEFORE process_packet can process the receive!?
-// * TEST w/ settings
-// * BUG: last_receive_ack set to 0 which auto acknowledges 0th packet
-
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 unsigned short checksum(struct Packet);
 
@@ -71,7 +62,7 @@ cout << getSenderSymbol() << "[" << (int)p.packet.data[i] << "->" << (int)buffer
 
 		next_send_seq++;
 		pthread_mutex_unlock(&mutex);
-		return n; // TODO: should be `return n;` ??
+		return 1;
 	} else {
 /*cout << getSenderSymbol() << "send_queue_length(" << (int)send_queue_length << "): ";
 for (unsigned int i = 0; i < send_queue_length; i++) {
@@ -90,10 +81,8 @@ unsigned int Link_layer::receive(unsigned char buffer[])
 	pthread_mutex_lock(&mutex);
 	length = receive_buffer_length;
 	if (length > 0) {
-		Packet p = read_packet(receive_buffer, length);
-		length = p.header.data_length;
 		for (unsigned int i = 0; i < length; i++) {
-			buffer[i] = p.data[i];
+			buffer[i] = (int)receive_buffer[i];
 		}
 		receive_buffer_length = 0;
 	}
@@ -110,7 +99,6 @@ cout << getSenderSymbol() << "prp:: p.seq: " << (int)p.header.seq << " == next_r
 			//if (receive_buffer_length == 0) {
 				for (unsigned int i=0; i<p.header.data_length; i++) {
 					receive_buffer[i] = (int)p.data[i];
-cout << getSenderSymbol() << "[" << (int)p.data[i] << "->" << (int)receive_buffer[i] << "]" << endl;
 				}
 				receive_buffer_length = p.header.data_length;
 				next_receive_seq++;
@@ -136,7 +124,8 @@ void Link_layer::remove_acked_packets()
 	unsigned int i = 0;
 	for (; i < this->send_queue_length; i++) {
 		if (send_queue[i].packet.header.seq <= last_receive_ack) { remove_packets = true;
-//if (getSenderSymbol()==' ')cout << getSenderSymbol() << "removing packet [" << (int)i << "] .seq: " << send_queue[i].packet.header.seq << " .ack: " << send_queue[i].packet.header.ack << endl;
+//if (getSenderSymbol()==' ')
+cout << getSenderSymbol() << "removing packet [" << (int)i << "] .seq: " << send_queue[i].packet.header.seq << " .ack: " << send_queue[i].packet.header.ack << endl;
 }
 		if (send_queue[i].packet.header.seq > last_receive_ack) break;
 	}
@@ -147,13 +136,15 @@ void Link_layer::remove_acked_packets()
 			send_queue[j-i]=send_queue[j];
 		}
 		this->send_queue_length-=(i);
-//if (getSenderSymbol()==' ') cout << getSenderSymbol() << "send_queue_length: " << (int)send_queue_length << endl;
+//if (getSenderSymbol()==' ')
+cout << getSenderSymbol() << "send_queue_length: " << (int)send_queue_length << endl;
 	}
 }
 
 void Link_layer::send_timed_out_packets()
 {
-//if (!isSender) cout << getSenderSymbol() << "send_timed_out_packets():: " << (int)send_queue_length << endl;
+//if (!isSender)
+cout << getSenderSymbol() << "send_timed_out_packets():: " << (int)send_queue_length << endl;
 	timeval now;
 	gettimeofday(&now, NULL);
 	for (unsigned int i = 0; i < send_queue_length; i++) {
@@ -169,15 +160,13 @@ std::cout << getSenderSymbol() << "send_timed_out_packets,  .seq: " << (int)send
 			} else {
 cout << getSenderSymbol() << "failed sending timed out packets!" << endl;
 			}
-		} else {
-//if (!isSender) cout << getSenderSymbol() << "NO TIMEOUT{now=" << now << "}" << endl;
-}
+		}
 	}
 }
 
 void Link_layer::generate_ack_packet()
 {
-	if (send_queue_length==0 && !isSender) {
+	if (send_queue_length==0) {
 		Timed_packet p;
 		gettimeofday(&p.send_time, NULL);
 		p.send_time = p.send_time + timeout;
@@ -197,9 +186,11 @@ void Link_layer::generate_ack_packet()
 		unsigned int length = write_packet(p.packet, packet_buffer);
 		unsigned int n = physical_layer_interface->send(packet_buffer,length);
 		if (n>0) {
-if (getSenderSymbol()!=' ') cout << getSenderSymbol() << "gap::acknowledging [" << (int)p.packet.header.ack << endl;
+//if (getSenderSymbol()!=' ')
+cout << getSenderSymbol() << "gap::acknowledging [" << (int)p.packet.header.ack << endl;
 		} else {
-//if (getSenderSymbol()!=' ') cout << getSenderSymbol() << "FAILED gap::acknowledge [" << (int)p.packet.header.ack << endl;
+//if (getSenderSymbol()!=' ')
+cout << getSenderSymbol() << "FAILED gap::acknowledge [" << (int)p.packet.header.ack << endl;
 		}
 	}
 }
@@ -210,15 +201,16 @@ void* Link_layer::loop(void* thread_creator)
 	Link_layer* link_layer = ((Link_layer*) thread_creator);
 	unsigned int length;
 	while (true) {
-			pthread_mutex_lock(&mutex);
 		length = 0;
+			pthread_mutex_lock(&mutex);
 		if (link_layer->receive_buffer_length == 0) {
-//if (link_layer->getSenderSymbol()==' ') cout << link_layer->getSenderSymbol() << "received " << (int)length << " bytes" << endl;
 			length =
 			 link_layer->physical_layer_interface->receive
 			 (link_layer->receive_buffer);
 			link_layer->receive_buffer_length = length;
-		}// else { length = link_layer->receive_buffer_length; }
+//if (link_layer->getSenderSymbol()==' ')
+cout << link_layer->getSenderSymbol() << "received " << (int)length << " bytes" << endl;
+		}
 
 			if (length > 0) {
 				Packet p = link_layer->read_packet(link_layer->receive_buffer, length);
@@ -255,6 +247,7 @@ void* Link_layer::loop(void* thread_creator)
 // moved these 2 OUTSIDE of the innerloop
 		link_layer->remove_acked_packets();
 		link_layer->send_timed_out_packets();
+//}
 
 
 		usleep(LOOP_INTERVAL);

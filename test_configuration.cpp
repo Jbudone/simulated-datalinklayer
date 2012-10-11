@@ -1,6 +1,6 @@
 // Link layer parameters
 unsigned int timeout = 100000;
-unsigned int max_win = 1; // 3
+unsigned int max_win = 3;
 unsigned int num_seq = 1; // 10
 
 // Physical Layer parameters

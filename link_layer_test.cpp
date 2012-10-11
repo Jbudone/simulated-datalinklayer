@@ -50,39 +50,6 @@ Link_layer* a_link_layer = new Link_layer
 Link_layer* b_link_layer = new Link_layer
  (physical_layer.get_b_interface(),num_seq,max_win,timeout);
 
-// // this is the standard Internet checksum algorithm
-//  unsigned short checksum(struct Packet p)
-// {
-// unsigned long sum = 0;
-// struct Packet copy;
-// unsigned short* shortbuf;
-// unsigned int length;
-// 
-// if (p.header.data_length > Link_layer::MAXIMUM_DATA_LENGTH) {
-// throw Link_layer_exception();
-// }
-// 
-// copy = p;
-// copy.header.checksum = 0;
-// length = sizeof(Packet_header)+copy.header.data_length;
-// shortbuf = (unsigned short*) &copy;
-// 
-// while (length > 1) {
-// sum += *shortbuf++;
-// length -= 2;
-// }
-// // handle the trailing byte, if present
-// if (length == 1) {
-// sum += *(unsigned char*) shortbuf;
-// }
-// 
-// sum = (sum >> 16)+(sum & 0xffff);
-// sum = (~(sum+(sum >> 16)) & 0xffff);
-// return (unsigned short) sum;
-// }
-// 
-// #endif
-// 
 int main(int argc,char* argv[])
 {
 
@@ -143,6 +110,22 @@ int main(int argc,char* argv[])
 
 	cout << "----- a to b..." << endl;
 	send_n(a_link_layer,b_link_layer,atoi(argv[1]));
+
+//a_link_layer->last_receive_ack=0;
+//a_link_layer->received_ack_0=false;
+//a_link_layer->next_receive_seq=0;
+//a_link_layer->next_send_seq=0;
+a_link_layer->receive_buffer_length=0;
+a_link_layer->send_queue_length=0;
+physical_layer.get_a_interface()->buffer_length=0;
+
+//b_link_layer->last_receive_ack=0;
+//b_link_layer->received_ack_0=false;
+//b_link_layer->next_receive_seq=0;
+//b_link_layer->next_send_seq=0;
+b_link_layer->receive_buffer_length=0;
+b_link_layer->send_queue_length=0;
+physical_layer.get_b_interface()->buffer_length=0;
 
 	cout << "----- b to a..." << endl;
 	send_n(b_link_layer,a_link_layer,atoi(argv[2]));

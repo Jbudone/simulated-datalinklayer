@@ -48,6 +48,7 @@ public:
 	unsigned int receive(unsigned char buffer[]);
 
 	int send(unsigned char buffer[],unsigned int length);
+	unsigned int buffer_length; // ignore other fields if buffer_length is 0
 private:
 	int send(unsigned char[],unsigned int,
 	 Physical_layer_interface*,Physical_layer_interface*);
@@ -61,7 +62,6 @@ private:
 	Impair impair;
 
 	// buffer state
-	unsigned int buffer_length; // ignore other fields if buffer_length is 0
 	unsigned char buffer[MAXIMUM_BUFFER_LENGTH];
 	struct timeval buffer_release_time;
 	bool buffer_is_corrupted,buffer_will_be_dropped;
